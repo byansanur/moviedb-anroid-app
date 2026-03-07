@@ -5,15 +5,15 @@ sealed class Screen(val route: String) {
 
     // Rute dengan argumen: genreId dan genreName untuk Judul Toolbar
     object MovieList : Screen("movie_list/{genreId}/{genreName}") {
-        fun createRoute(genreId: Int, genreName: String) = "movie_list/$genreId/$genreName"
+        fun createRoute(genreId: Long, genreName: String) = "movie_list/$genreId/$genreName"
     }
 
     object MovieDetail : Screen("movie_detail/{movieId}") {
-        fun createRoute(movieId: Int) = "movie_detail/$movieId"
+        fun createRoute(movieId: Long) = "movie_detail/$movieId"
     }
 
     object UserReviews : Screen("user_reviews/{movieId}") {
-        fun createRoute(movieId: Int) = "user_reviews/$movieId"
+        fun createRoute(movieId: Long) = "user_reviews/$movieId"
     }
 
     object TrailerPlayer : Screen("trailer_player/{videoKey}") {

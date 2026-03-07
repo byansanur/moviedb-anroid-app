@@ -17,5 +17,8 @@ interface MovieDao {
     fun getMoviesByGenre(genreId: Int): PagingSource<Int, MovieEntity>
 
     @Query("DELETE FROM movies WHERE genreId = :genreId")
-    suspend fun clearMoviesByGenre(genreId: Int)
+    suspend fun clearMoviesByGenre(genreId: Long)
+
+    @Query("SELECT COUNT(*) FROM movies WHERE genreId = :genreId")
+    suspend fun getCountByGenre(genreId: Long): Int
 }

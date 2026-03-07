@@ -18,9 +18,9 @@ kotlinxSerialization = "1.7.3"
 ksp = "2.0.21-1.0.27" # KSP version harus cocok dengan Kotlin 2.0.21
 youtubePlayer = "12.1.1"
 
-sqlcipher = "4.5.4"
-sqlite = "2.6.2"
-security-crypto = "1.1.0-alpha06"
+sqlcipher-android = "4.13.0"
+sqlite-ktx = "2.6.2"
+security-crypto = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -68,16 +68,18 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 # YouTube Player (Untuk Story 5)
 youtube-player-core = { group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "core", version.ref = "youtubePlayer" }
 
-android-database-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
-# SQLite KTX untuk dukungan helper factory
-androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqlite" }
-# Jetpack Security untuk menyimpan encryption key secara aman
+# SQLCipher Android
+sqlcipher-android = { group = "net.zetetic", name = "sqlcipher-android", version.ref = "sqlcipher-android" }
+
+# SQLite KTX untuk mendukung factory Room
+androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqlite-ktx" }
+
+# Jetpack Security untuk enkripsi data
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 
 [bundles]
-# Opsional: gabungkan agar lebih ringkas saat di-import
 database-security = [
-    "android-database-sqlcipher",
+    "sqlcipher-android",
     "androidx-sqlite-ktx",
     "androidx-security-crypto"
 ]

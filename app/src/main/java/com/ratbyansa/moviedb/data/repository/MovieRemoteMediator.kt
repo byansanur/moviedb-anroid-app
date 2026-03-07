@@ -9,16 +9,17 @@ import com.ratbyansa.moviedb.data.local.MovieDatabase
 import com.ratbyansa.moviedb.data.local.entity.MovieEntity
 import com.ratbyansa.moviedb.data.local.entity.RemoteKeysEntity
 import com.ratbyansa.moviedb.data.remote.model.MovieResponse
+import com.ratbyansa.moviedb.data.remote.model.toEntity
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 
 @OptIn(ExperimentalPagingApi::class)
 class MovieRemoteMediator(
-    private val genreId: Int,
+    private val genreId: Long,
     private val database: MovieDatabase,
     private val ktorClient: HttpClient
-) : RemoteMediator<Int, MovieEntity>() {
+) : RemoteMediator<Long, MovieEntity>() {
 
     // LOGIKA ANTI BONCOS:
     // Jika data di lokal sudah ada, jangan paksa refresh dari API saat aplikasi dibuka
@@ -28,10 +29,10 @@ class MovieRemoteMediator(
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, MovieEntity>
+        state: PagingState<Long, MovieEntity>
     ): MediatorResult {
         return try {
-            val page = when (loadType) {
+            val page: Long = when (loadType) {
                 LoadType.REFRESH -> 1
                 LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
                 LoadType.APPEND -> {
@@ -51,37 +52,25 @@ class MovieRemoteMediator(
                 }
             }.body<MovieResponse>()
 
-            val endOfPaginationReached = response.results.isEmpty()
+            val movies = response.results
+            val endOfPaginationReached = movies.isEmpty()
 
             database.withTransaction {
                 if (loadType == LoadType.REFRESH) {
-                    // Kita tidak menghapus semua, hanya yang spesifik genre ini
                     database.remoteKeysDao().clearRemoteKeys()
                     database.movieDao().clearMoviesByGenre(genreId)
                 }
 
-                val prevKey = if (page == 1) null else page - 1
+                val prevKey = if (page == 1L) null else page - 1L
                 val nextKey = if (endOfPaginationReached) null else page + 1
 
-                val keys = response.results.map {
-                    RemoteKeysEntity(movieId = it.id, prevKey = prevKey, nextKey = nextKey)
-                }
+                val movieEntities = movies.map { it.toEntity(genreId) }
 
-                val entities = response.results.map { dto ->
-                    MovieEntity(
-                        id = dto.id,
-                        title = dto.title,
-                        overview = dto.overview,
-                        posterPath = dto.posterPath,
-                        backdropPath = dto.backdropPath,
-                        releaseDate = dto.releaseDate,
-                        voteAverage = dto.voteAverage,
-                        genreId = genreId // Penting untuk filter lokal
-                    )
+                val keys = movieEntities.map {
+                    RemoteKeysEntity(movieId = it.id, prevKey = prevKey?.minus(1), nextKey = nextKey, genreId = genreId)
                 }
-
                 database.remoteKeysDao().insertAll(keys)
-                database.movieDao().insertAll(entities)
+                database.movieDao().insertAll(movieEntities)
             }
 
             MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
@@ -90,7 +79,7 @@ class MovieRemoteMediator(
         }
     }
 
-    private suspend fun getRemoteKeyForLastItem(state: PagingState<Int, MovieEntity>): RemoteKeysEntity? {
+    private suspend fun getRemoteKeyForLastItem(state: PagingState<Long, MovieEntity>): RemoteKeysEntity? {
         return state.pages.lastOrNull { it.data.isNotEmpty() }?.data?.lastOrNull()?.let { movie ->
             database.remoteKeysDao().remoteKeysMovieId(movie.id)
         }

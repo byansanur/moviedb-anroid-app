@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "remote_keys")
 data class RemoteKeysEntity(
     @PrimaryKey
-    val movieId: Int,
-    val prevKey: Int?,
-    val nextKey: Int?
+    val movieId: Long,
+    val prevKey: Long?,
+    val nextKey: Long?,
+    val genreId: Long?
 )

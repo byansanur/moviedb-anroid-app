@@ -16,5 +16,5 @@ interface GenreDao {
     fun getAllGenres(): Flow<List<GenreEntity>>
 
     @Query("SELECT COUNT(*) FROM genres")
-    suspend fun getGenreCount(): Int
+    suspend fun getGenreCount(): Long
 }

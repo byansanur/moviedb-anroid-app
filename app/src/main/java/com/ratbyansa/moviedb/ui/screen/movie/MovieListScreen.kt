@@ -23,12 +23,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.ratbyansa.moviedb.data.local.entity.MovieEntity
 import com.ratbyansa.moviedb.ui.common.ErrorStateUI
@@ -38,7 +40,7 @@ import com.ratbyansa.moviedb.ui.common.ErrorStateUI
 fun MovieListScreen(
     genreName: String,
     moviePagingItems: LazyPagingItems<MovieEntity>,
-    onMovieClick: (Int) -> Unit,
+    onMovieClick: (Long) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -76,14 +78,16 @@ fun MovieListScreen(
                 )
             }
 
-            // Daftar Film (Story 2 & 6)
             items(
                 count = moviePagingItems.itemCount,
-                key = moviePagingItems.itemKey { it.id }
+                key = moviePagingItems.itemKey { it.id },
+                contentType = moviePagingItems.itemContentType { "movie" }
             ) { index ->
                 val movie = moviePagingItems[index]
                 if (movie != null) {
-                    MovieItem(movie = movie, onClick = onMovieClick)
+                    key(movie.id) {
+                        MovieItem(movie = movie, onClick = onMovieClick)
+                    }
                 }
             }
 

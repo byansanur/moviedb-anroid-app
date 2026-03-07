@@ -4,6 +4,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import com.ratbyansa.moviedb.data.local.MovieDatabase
 import com.ratbyansa.moviedb.data.local.entity.GenreEntity
 import com.ratbyansa.moviedb.data.local.entity.MovieEntity
@@ -19,8 +20,7 @@ class MovieRepository(
 ) {
     suspend fun getGenres(): Flow<List<GenreEntity>> {
         val count = database.genreDao().getGenreCount()
-        if (count == 0) {
-            // Hit API hanya jika lokal kosong
+        if (count == 0L) {
             val response = ktorClient.get("genre/movie/list").body<GenreListResponse>()
 
             // Mapping DTO ke Entity Room
@@ -34,11 +34,16 @@ class MovieRepository(
     }
 
     @OptIn(ExperimentalPagingApi::class)
-    fun getMoviesByGenre(genreId: Int): Flow<PagingData<MovieEntity>> {
+    fun getMoviesByGenre(genreId: Long): Flow<PagingData<MovieEntity>> {
         return Pager(
-            config = PagingConfig(pageSize = 20, prefetchDistance = 2),
+            config = PagingConfig(
+                pageSize = 10,
+                prefetchDistance = 2,
+                maxSize = 49,
+                enablePlaceholders = false
+            ),
             remoteMediator = MovieRemoteMediator(genreId, database, ktorClient),
-            pagingSourceFactory = { database.movieDao().getMoviesByGenre(genreId) }
+            pagingSourceFactory = { database.movieDao().getMoviesByGenre(genreId.toInt()) as PagingSource<Long, MovieEntity> }
         ).flow
     }
 }

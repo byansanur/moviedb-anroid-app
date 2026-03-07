@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "movies")
 data class MovieEntity(
     @PrimaryKey
-    val id: Int,
+    val id: Long,
     val title: String,
     val overview: String,
     val posterPath: String?,
@@ -14,5 +14,5 @@ data class MovieEntity(
     val releaseDate: String,
     val voteAverage: Double,
     // Kita simpan ID genre yang sedang dibuka agar bisa memfilter data saat offline
-    val genreId: Int
+    val genreId: Long
 )

@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
 
-    private val _currentGenreId = MutableStateFlow<Int?>(null)
+    private val _currentGenreId = MutableStateFlow<Long?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val moviePagingData: Flow<PagingData<MovieEntity>> = _currentGenreId
@@ -26,7 +26,7 @@ class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
         }
         .cachedIn(viewModelScope)
 
-    fun setGenre(genreId: Int) {
+    fun setGenre(genreId: Long) {
         if (_currentGenreId.value == genreId) return
         _currentGenreId.value = genreId
     }

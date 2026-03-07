@@ -38,11 +38,11 @@ fun AppNavHost(
         composable(
             route = Screen.MovieList.route,
             arguments = listOf(
-                navArgument("genreId") { type = NavType.IntType },
+                navArgument("genreId") { type = NavType.LongType },
                 navArgument("genreName") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val genreId = backStackEntry.arguments?.getInt("genreId") ?: 0
+            val genreId = backStackEntry.arguments?.getLong("genreId") ?: 0
             val genreName = backStackEntry.arguments?.getString("genreName") ?: ""
             val viewModel: MovieViewModel = koinViewModel()
 
