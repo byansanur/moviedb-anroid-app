@@ -31,6 +31,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "baseUrl", getLocalProperty("baseUrl"))
+        buildConfigField("String", "imageUrl", getLocalProperty("imageUrl"))
         buildConfigField("String", "apiKey", getLocalProperty("apiKey"))
         buildConfigField("String", "accessToken", getLocalProperty("accessToken"))
     }
