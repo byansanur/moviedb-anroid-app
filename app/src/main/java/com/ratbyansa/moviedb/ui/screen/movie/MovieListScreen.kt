@@ -50,13 +50,6 @@ fun MovieListScreen(
                             null
                         )
                     }
-                }, actions = {
-                    IconButton(onClick = { /* Filter */ }) {
-                        Icon(
-                            Icons.Default.Menu,
-                            null
-                        )
-                    }
                 })
         }
     ) { padding ->
