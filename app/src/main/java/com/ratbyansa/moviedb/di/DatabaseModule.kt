@@ -32,4 +32,5 @@ val databaseModule = module {
     single { get<MovieDatabase>().genreDao() }
     single { get<MovieDatabase>().remoteKeysDao() }
     single { get<MovieDatabase>().searchHistoryDao() }
+    single { get<MovieDatabase>().favoriteDao() }
 }

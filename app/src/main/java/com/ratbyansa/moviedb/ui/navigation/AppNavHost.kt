@@ -11,7 +11,9 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ratbyansa.moviedb.ui.screen.GenreScreen
 import com.ratbyansa.moviedb.ui.screen.SearchScreen
+import com.ratbyansa.moviedb.ui.screen.detail.MovieDetailScreen
 import com.ratbyansa.moviedb.ui.screen.movie.MovieListScreen
+import com.ratbyansa.moviedb.ui.viewmodel.FavoriteViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.GenreViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.MovieViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -28,6 +30,7 @@ fun AppNavHost(
     ) {
         composable(Screen.GenreList.route) {
             val viewModel: GenreViewModel = koinViewModel()
+            val favoriteViewModel: FavoriteViewModel = koinViewModel()
             GenreScreen(
                 viewModel = viewModel,
                 onGenreClick = { genre ->
@@ -35,15 +38,21 @@ fun AppNavHost(
                 },
                 onSearchClick = {
                     navController.navigate(Screen.MovieSearch.createRoute())
+                },
+                favoriteViewModel = favoriteViewModel,
+                onMovieClick = {
+                    navController.navigate(Screen.MovieDetail.createRoute(it))
                 }
             )
         }
 
         composable(Screen.MovieSearch.route) {
+            val favViewModel: FavoriteViewModel = koinViewModel()
             SearchScreen(
                 viewModel = koinViewModel(),
                 onBackClick = { navController.popBackStack() },
-                onMovieClick = { movieId -> navController.navigate("movieDetail/$movieId") }
+                onMovieClick = { movieId -> navController.navigate(Screen.MovieDetail.createRoute(movieId)) },
+                favoriteViewModel = favViewModel
             )
         }
 
@@ -75,9 +84,15 @@ fun AppNavHost(
 
         composable(
             route = Screen.MovieDetail.route,
-            arguments = listOf(navArgument("movieId") { type = NavType.IntType })
-        ) {
+            arguments = listOf(navArgument("movieId") { type = NavType.LongType })
+        ) { backStackEntry ->
             // Implementasi DetailScreen nanti
+            val movieId = backStackEntry.arguments?.getLong("movieId") ?: 0L
+
+            MovieDetailScreen(
+                movieId = movieId,
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

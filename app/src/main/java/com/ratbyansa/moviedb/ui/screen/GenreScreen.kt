@@ -6,19 +6,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
@@ -38,8 +36,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,17 +51,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ratbyansa.moviedb.data.local.entity.GenreEntity
 import com.ratbyansa.moviedb.ui.common.UiState
+import com.ratbyansa.moviedb.ui.screen.common.AllGenresBottomSheet
+import com.ratbyansa.moviedb.ui.screen.common.ErrorBottomSheet
+import com.ratbyansa.moviedb.ui.screen.common.FavoriteQuickActionRow
+import com.ratbyansa.moviedb.ui.viewmodel.FavoriteViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.GenreViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenreScreen(
     viewModel: GenreViewModel,
     onGenreClick: (GenreEntity) -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    favoriteViewModel: FavoriteViewModel = koinViewModel(),
+    onMovieClick: (Long) -> Unit
 ) {
+    var showBottomSheet by remember { mutableStateOf(false) }
     val uiState by viewModel.genreState.collectAsState()
-    var isExpanded by remember { mutableStateOf(false) }
+    val favorites by favoriteViewModel.favoriteMovies.collectAsState()
+
+    var showEmptyError by remember { mutableStateOf(false) }
+    var errorMsg by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState) {
+        if (uiState is UiState.Error) {
+            errorMsg = (uiState as UiState.Error).message ?: "Unknown Error"
+            showEmptyError = true
+        }
+    }
+
+    if (showEmptyError) {
+        ErrorBottomSheet(
+            errorMessage = errorMsg,
+            onDismiss = { showEmptyError = false },
+            onRetry = { viewModel.getGenres() }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -77,70 +101,99 @@ fun GenreScreen(
             )
         }
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("DISCOVER", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
-            Text(
-                "Browse by Genre",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold)
-            )
-            Text(
-                "Explore our extensive collection of movies categorized by genre.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+            item {
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("DISCOVER", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+                    Text(
+                        "Browse by Genre",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold)
+                    )
+                    Text(
+                        "Explore our extensive collection of movies categorized by genre. Find exactly what you're looking for with you're in the mood for.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
 
             when (uiState) {
                 is UiState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                    item {
+                        Box(Modifier.fillParentMaxHeight(0.6f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
                 is UiState.Success -> {
                     val allGenres = (uiState as UiState.Success<List<GenreEntity>>).data
-                    val displayedGenres by remember(isExpanded, uiState) {
-                        derivedStateOf {
-                            if (uiState is UiState.Success) {
-                                val all = (uiState as UiState.Success<List<GenreEntity>>).data
-                                if (isExpanded) all else all.take(7)
-                            } else {
-                                emptyList()
+
+                    val displayedGenres = allGenres.take(5)
+                    val rows = displayedGenres.chunked(2)
+
+                    rows.forEachIndexed { rowIndex, rowItems ->
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                rowItems.forEach { genre ->
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        GenreCard(genre = genre, onClick = { onGenreClick(genre) })
+                                    }
+                                }
+
+                                if (rowIndex == 2 && rowItems.size == 1) {
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        SeeMoreCard(onClick = { showBottomSheet = true }) // Trigger BottomSheet
+                                    }
+                                } else if (rowItems.size < 2) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
                             }
                         }
                     }
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(bottom = 24.dp)
-                    ) {
-                        items(
-                            items =displayedGenres,
-                            key = { it.id }
-                        ) { genre ->
-                            GenreCard(genre = genre, onClick = { onGenreClick(genre) })
-                        }
-                        if (!isExpanded && allGenres.size > 7) {
-                            item {
-                                SeeMoreCard(onClick = { isExpanded = true })
-                            }
+
+                    if (favorites.isNotEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            FavoriteQuickActionRow(
+                                favorites = favorites.take(10),
+                                onMovieClick = { movieId -> onMovieClick(movieId) }
+                            )
                         }
                     }
                 }
                 is UiState.Error -> {
-                    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Oops! Terjadi kesalahan koneksi.")
-                        Button(onClick = { viewModel.getGenres() }) { Text("Coba Lagi") }
+                    item {
+                        Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Oops! Terjadi kesalahan koneksi.")
+                            Button(onClick = { viewModel.getGenres() }) { Text("Coba Lagi") }
+                        }
                     }
                 }
-                else -> Unit
+                else -> {}
             }
         }
+    }
+    if (showBottomSheet && uiState is UiState.Success) {
+        AllGenresBottomSheet(
+            allGenres = (uiState as UiState.Success).data,
+            onGenreClick = { genre ->
+                showBottomSheet = false
+                onGenreClick(genre)
+            },
+            onDismiss = { showBottomSheet = false }
+        )
     }
 }
 

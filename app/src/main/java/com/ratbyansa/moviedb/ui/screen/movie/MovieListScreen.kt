@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +31,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.ratbyansa.moviedb.data.local.entity.MovieEntity
 import com.ratbyansa.moviedb.ui.common.ErrorStateUI
+import com.ratbyansa.moviedb.ui.screen.movie.component.MovieItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

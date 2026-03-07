@@ -9,10 +9,12 @@ import com.ratbyansa.moviedb.data.local.MovieDatabase
 import com.ratbyansa.moviedb.data.local.entity.GenreEntity
 import com.ratbyansa.moviedb.data.local.entity.MovieEntity
 import com.ratbyansa.moviedb.data.remote.model.GenreListResponse
+import com.ratbyansa.moviedb.data.remote.model.MovieDetailResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class MovieRepository(
     private val database: MovieDatabase,
@@ -45,5 +47,18 @@ class MovieRepository(
             remoteMediator = MovieRemoteMediator(genreId, database, ktorClient),
             pagingSourceFactory = { database.movieDao().getMoviesByGenre(genreId.toInt()) as PagingSource<Long, MovieEntity> }
         ).flow
+    }
+
+    fun getMovieDetail(movieId: Long): Flow<Result<MovieDetailResponse>> = flow {
+        try {
+            val response = ktorClient.get("movie/$movieId") {
+                url {
+                    parameters.append("append_to_response", "credits")
+                }
+            }.body<MovieDetailResponse>()
+            emit(Result.success(response))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 }
