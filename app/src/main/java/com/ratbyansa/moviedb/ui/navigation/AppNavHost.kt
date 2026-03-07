@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ratbyansa.moviedb.ui.screen.GenreScreen
+import com.ratbyansa.moviedb.ui.screen.movie.MovieListScreen
 import com.ratbyansa.moviedb.ui.viewmodel.GenreViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.MovieViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -24,7 +25,6 @@ fun AppNavHost(
         startDestination = Screen.GenreList.route,
         modifier = modifier
     ) {
-        // 1. Screen Genre List
         composable(Screen.GenreList.route) {
             val viewModel: GenreViewModel = koinViewModel()
             GenreScreen(
@@ -35,7 +35,6 @@ fun AppNavHost(
             )
         }
 
-        // 2. Screen Movie List by Genre
         composable(
             route = Screen.MovieList.route,
             arguments = listOf(
@@ -49,20 +48,19 @@ fun AppNavHost(
 
             // Panggil fungsi untuk ambil data berdasarkan genreId
             LaunchedEffect(genreId) {
-                viewModel.getMoviesByGenre(genreId)
+                viewModel.setGenre(genreId)
             }
-
-//            MovieListScreen(
-//                genreName = genreName,
-//                moviePagingItems = viewModel.moviePagingData.collectAsLazyPagingItems(),
-//                onMovieClick = { movieId ->
-//                    navController.navigate(Screen.MovieDetail.createRoute(movieId))
-//                },
-//                onBackClick = { navController.popBackStack() }
-//            )
+            val movies = viewModel.moviePagingData.collectAsLazyPagingItems()
+            MovieListScreen(
+                genreName = genreName,
+                moviePagingItems = movies,
+                onMovieClick = { movieId ->
+                    navController.navigate(Screen.MovieDetail.createRoute(movieId))
+                },
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
-        // 3. Screen Movie Detail (Setup placeholder dulu)
         composable(
             route = Screen.MovieDetail.route,
             arguments = listOf(navArgument("movieId") { type = NavType.IntType })
