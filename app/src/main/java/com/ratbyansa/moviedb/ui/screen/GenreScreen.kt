@@ -59,7 +59,8 @@ import com.ratbyansa.moviedb.ui.viewmodel.GenreViewModel
 @Composable
 fun GenreScreen(
     viewModel: GenreViewModel,
-    onGenreClick: (GenreEntity) -> Unit
+    onGenreClick: (GenreEntity) -> Unit,
+    onSearchClick: () -> Unit
 ) {
     val uiState by viewModel.genreState.collectAsState()
     var isExpanded by remember { mutableStateOf(false) }
@@ -69,7 +70,9 @@ fun GenreScreen(
             TopAppBar(
                 title = { Text("TMDB Explorer", fontWeight = FontWeight.Bold) },
                 actions = {
-                    IconButton(onClick = { /* Search */ }) { Icon(Icons.Default.Search, null) }
+                    IconButton(onClick = { onSearchClick() }) {
+                        Icon(Icons.Default.Search, "Global Search")
+                    }
                 }
             )
         }

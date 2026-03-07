@@ -5,12 +5,14 @@ import androidx.room.RoomDatabase
 import com.ratbyansa.moviedb.data.local.dao.GenreDao
 import com.ratbyansa.moviedb.data.local.dao.MovieDao
 import com.ratbyansa.moviedb.data.local.dao.RemoteKeysDao
+import com.ratbyansa.moviedb.data.local.dao.SearchHistoryDao
 import com.ratbyansa.moviedb.data.local.entity.GenreEntity
 import com.ratbyansa.moviedb.data.local.entity.MovieEntity
 import com.ratbyansa.moviedb.data.local.entity.RemoteKeysEntity
+import com.ratbyansa.moviedb.data.local.entity.SearchHistoryEntity
 
 @Database(
-    entities = [GenreEntity::class, MovieEntity::class, RemoteKeysEntity::class],
+    entities = [GenreEntity::class, MovieEntity::class, RemoteKeysEntity::class, SearchHistoryEntity::class],
     version = 1,
     exportSchema = true
 )
@@ -18,4 +20,5 @@ abstract class MovieDatabase : RoomDatabase() {
     abstract fun genreDao(): GenreDao
     abstract fun movieDao(): MovieDao
     abstract fun remoteKeysDao(): RemoteKeysDao
+    abstract fun searchHistoryDao(): SearchHistoryDao
 }
