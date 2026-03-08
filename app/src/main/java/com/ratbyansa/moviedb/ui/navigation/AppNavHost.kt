@@ -16,10 +16,12 @@ import com.ratbyansa.moviedb.ui.screen.SearchScreen
 import com.ratbyansa.moviedb.ui.screen.detail.MovieDetailScreen
 import com.ratbyansa.moviedb.ui.screen.movie.MovieListScreen
 import com.ratbyansa.moviedb.ui.screen.review.ReviewScreen
+import com.ratbyansa.moviedb.ui.screen.trailer.TrailerPlayerScreen
 import com.ratbyansa.moviedb.ui.viewmodel.FavoriteViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.GenreViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.MovieViewModel
 import com.ratbyansa.moviedb.ui.viewmodel.ReviewViewModel
+import com.ratbyansa.moviedb.ui.viewmodel.VideoViewModel
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
 
@@ -93,12 +95,16 @@ fun AppNavHost(
         ) { backStackEntry ->
             // Implementasi DetailScreen nanti
             val movieId = backStackEntry.arguments?.getLong("movieId") ?: 0L
-
+            val videoViewModel: VideoViewModel = koinViewModel()
             MovieDetailScreen(
                 movieId = movieId,
+                videoViewModel = videoViewModel,
                 onBackClick = { navController.popBackStack() },
                 onSeeReview = { movieJson ->
                     navController.navigate(Screen.UserReviews.createRoute(movieJson))
+                },
+                onNavigateToPlayer = { videoKey, movieJson ->
+                    navController.navigate(Screen.TrailerPlayer.createRoute(videoKey, movieJson))
                 }
             )
         }
@@ -114,6 +120,34 @@ fun AppNavHost(
                 movie = movie,
                 onBackClick = { navController.popBackStack() }
             )
+        }
+
+        composable(
+            route = Screen.TrailerPlayer.route,
+            arguments = listOf(
+                navArgument("videoKey") { type = NavType.StringType },
+                navArgument("movieData") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val rawVideoKey = backStackEntry.arguments?.getString("videoKey") ?: ""
+            val videoKey = Uri.decode(rawVideoKey) // Tambahkan baris ini!
+
+            val rawMovieJson = backStackEntry.arguments?.getString("movieData") ?: ""
+            val movieJson = Uri.decode(rawMovieJson)
+
+            val movie = if (movieJson.isNotEmpty()) {
+                Json.decodeFromString<MovieDetailResponse>(movieJson)
+            } else {
+                null // Berikan penanganan null jika perlu
+            }
+
+            if (movie != null) {
+                TrailerPlayerScreen(
+                    videoKey = videoKey,
+                    movie = movie,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

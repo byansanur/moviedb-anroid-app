@@ -20,7 +20,7 @@ sealed class Screen(val route: String) {
         fun createRoute(movieData: String) = "user_reviews/$movieData"
     }
 
-    object TrailerPlayer : Screen("trailer_player/{videoKey}") {
-        fun createRoute(videoKey: String) = "trailer_player/$videoKey"
+    object TrailerPlayer : Screen("trailer_player/{videoKey}/{movieData}") {
+        fun createRoute(videoKey: String, movieData: String) = "trailer_player/$videoKey/$movieData"
     }
 }
