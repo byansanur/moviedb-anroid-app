@@ -39,15 +39,25 @@ fun MovieListScreen(
     genreName: String,
     moviePagingItems: LazyPagingItems<MovieEntity>,
     onMovieClick: (Long) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNavigateToSearch: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("$genreName Movies", fontWeight = FontWeight.Bold) }, navigationIcon = {
+            TopAppBar(title = { Text("$genreName Movies", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             null
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Search Movies"
                         )
                     }
                 })
@@ -57,18 +67,6 @@ fun MovieListScreen(
             modifier = Modifier.padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            // Search Bar (Sesuai Desain image_df0a21.jpg)
-            item {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    placeholder = { Text("Search $genreName movies...") },
-                    leadingIcon = { Icon(Icons.Default.Search, null) },
-                    shape = RoundedCornerShape(24.dp)
-                )
-            }
-
             items(
                 count = moviePagingItems.itemCount,
                 key = moviePagingItems.itemKey { it.id },

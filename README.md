@@ -72,7 +72,7 @@ This project is equipped with **GitHub Actions** that automatically compile, run
 
 | Home / Genre | Movie List | Search | Movie Detail | Trailer Player |
 | --- | --- | --- | --- | --- |
-| <img src="screenshoot/home-screen.jpeg" width="200"/> | <img src="screenshoot/movie-list-screen.jpeg" width="200"/> | <img src="screenshoot/search-screen.jpeg" width="200"/> | <img src="screenshoot/detail-screen.jpeg" width="200"/> | <img src="screenshoot/trailer-screen.jpeg" width="200"/> |
+| <img src="screenshoot/home-screen.jpeg" width="200"/> | <img src="screenshoot/movie-list-screen-2.jpeg" width="200"/> | <img src="screenshoot/search-screen.jpeg" width="200"/> | <img src="screenshoot/detail-screen.jpeg" width="200"/> | <img src="screenshoot/trailer-screen.jpeg" width="200"/> |
 
 ## 👨‍💻 Author
 

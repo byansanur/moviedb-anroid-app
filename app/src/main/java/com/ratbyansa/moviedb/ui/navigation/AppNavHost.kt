@@ -85,7 +85,10 @@ fun AppNavHost(
                 onMovieClick = { movieId ->
                     navController.navigate(Screen.MovieDetail.createRoute(movieId))
                 },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onNavigateToSearch = {
+                    navController.navigate(Screen.MovieSearch.createRoute())
+                }
             )
         }
 
