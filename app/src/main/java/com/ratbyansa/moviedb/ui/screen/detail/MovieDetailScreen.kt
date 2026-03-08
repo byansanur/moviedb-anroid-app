@@ -1,49 +1,21 @@
 package com.ratbyansa.moviedb.ui.screen.detail
 
-import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,25 +25,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.ratbyansa.moviedb.data.remote.model.CastDto
-import com.ratbyansa.moviedb.data.remote.model.GenreDto
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ratbyansa.moviedb.data.remote.model.MovieDetailResponse
 import com.ratbyansa.moviedb.ui.common.UiState
-import com.ratbyansa.moviedb.ui.navigation.Screen
 import com.ratbyansa.moviedb.ui.screen.common.ErrorBottomSheet
 import com.ratbyansa.moviedb.ui.screen.detail.component.ActionButtons
 import com.ratbyansa.moviedb.ui.screen.detail.component.BackdropImage
+import com.ratbyansa.moviedb.ui.screen.detail.component.CastBottomSheet
 import com.ratbyansa.moviedb.ui.screen.detail.component.CastSection
 import com.ratbyansa.moviedb.ui.screen.detail.component.GenreChipsSection
 import com.ratbyansa.moviedb.ui.screen.detail.component.MetadataSection
@@ -79,6 +41,7 @@ import com.ratbyansa.moviedb.ui.screen.detail.component.SynopsisSection
 import com.ratbyansa.moviedb.ui.screen.detail.component.TitleSection
 import com.ratbyansa.moviedb.ui.screen.detail.component.TopAppBarButtons
 import com.ratbyansa.moviedb.ui.viewmodel.MovieDetailViewModel
+import com.ratbyansa.moviedb.ui.viewmodel.VideoViewModel
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
@@ -88,18 +51,27 @@ import org.koin.androidx.compose.koinViewModel
 fun MovieDetailScreen(
     movieId: Long,
     viewModel: MovieDetailViewModel = koinViewModel(),
+    videoViewModel: VideoViewModel = koinViewModel(),
     onBackClick: () -> Unit,
-    onSeeReview: (String) -> Unit
+    onSeeReview: (String) -> Unit,
+    onNavigateToPlayer: (String, String) -> Unit
 ) {
     val uiState by viewModel.detailState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
+
+    val trailerKey by videoViewModel.trailerKey.collectAsStateWithLifecycle()
+
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var showEmptyError by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf("") }
 
+    // STATE UNTUK BOTTOM SHEET CAST
+    var showCastSheet by remember { mutableStateOf(false) }
+
     LaunchedEffect(movieId) {
         viewModel.getMovieDetail(movieId)
+        videoViewModel.getMovieTrailer(movieId)
     }
 
     LaunchedEffect(uiState) {
@@ -129,7 +101,6 @@ fun MovieDetailScreen(
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
-                    // TopBar hanya berisi tombol, background transparan yang berubah jadi solid saat scroll
                     TopAppBarButtons(
                         isFavorite = isFavorite,
                         scrollBehavior = scrollBehavior,
@@ -141,14 +112,14 @@ fun MovieDetailScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding()
                         .background(MaterialTheme.colorScheme.background)
                 ) {
                     item {
                         BackdropImage(
                             backdropPath = movie.backdropPath ?: "",
                             onPlayClick = {
-                                // Tambahkan logika navigasi Anda di sini, contoh:
-                                // navController.navigate("player/${movie.id}")
+                                goToTrailer(trailerKey, movie, onNavigateToPlayer)
                             }
                         )
                     }
@@ -169,22 +140,34 @@ fun MovieDetailScreen(
                     }
                     item {
                         Spacer(modifier = Modifier.height(24.dp))
-                        movie.credits?.cast?.let { CastSection(it) }
+                        movie.credits?.cast?.let { castList ->
+                            CastSection(
+                                cast = castList,
+                                onSeeAllClick = { showCastSheet = true } // Munculkan sheet
+                            )
+                        }
                     }
                     item {
                         Spacer(modifier = Modifier.height(32.dp))
                         ActionButtons(
                             onReadReviewsClick = {
-                                // Encode objek movie ke JSON string
                                 val movieJson = Json.encodeToString(movie)
-                                // Encode URI agar karakter khusus seperti '/' di posterPath tidak merusak rute
                                 val encodedJson = Uri.encode(movieJson)
                                 onSeeReview(encodedJson)
+                            },
+                            onWatchTrailer = {
+                                goToTrailer(trailerKey, movie, onNavigateToPlayer)
                             }
                         )
                         Spacer(modifier = Modifier.height(128.dp))
                     }
                 }
+            }
+            if (showCastSheet && movie.credits?.cast != null) {
+                CastBottomSheet(
+                    castList = movie.credits.cast,
+                    onDismiss = { showCastSheet = false }
+                )
             }
         }
         is UiState.Error -> {
@@ -195,5 +178,23 @@ fun MovieDetailScreen(
             }
         }
         else -> {}
+    }
+}
+
+private fun goToTrailer(
+    trailerKey: String?,
+    movie: MovieDetailResponse,
+    onNavigateToPlayer: (String, String) -> Unit
+) {
+    trailerKey?.let { key ->
+        // Encode movie json
+        val movieJson = Json.encodeToString(movie)
+        val encodedJson = Uri.encode(movieJson)
+
+        // PENTING: Encode juga video key-nya!
+        val encodedKey = Uri.encode(key)
+
+        // Kirim data yang sudah di encode
+        onNavigateToPlayer(encodedKey, encodedJson)
     }
 }

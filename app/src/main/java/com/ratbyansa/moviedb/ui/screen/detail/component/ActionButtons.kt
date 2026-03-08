@@ -19,16 +19,17 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun ActionButtons(
-    onReadReviewsClick: () -> Unit
+    onReadReviewsClick: () -> Unit,
+    onWatchTrailer: () -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Button(
-            onClick = { /* Get Tickets */ },
+            onClick = { onWatchTrailer() },
             modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF29B6F6)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE50914)),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Get Tickets", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Watch Trailer", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(12.dp))
         Button(
