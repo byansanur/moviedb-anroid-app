@@ -16,7 +16,7 @@ coil = "2.7.0"
 navigationCompose = "2.8.3"
 kotlinxSerialization = "1.7.3"
 ksp = "2.0.21-1.0.27" # KSP version harus cocok dengan Kotlin 2.0.21
-youtubePlayer = "12.1.1"
+youtubePlayer = "13.0.0"
 
 sqlcipher-android = "4.13.0"
 sqlite-ktx = "2.6.2"
