@@ -21,6 +21,9 @@ youtubePlayer = "13.0.0"
 sqlcipher-android = "4.13.0"
 sqlite-ktx = "2.6.2"
 security-crypto = "1.1.0"
+mockk = "1.13.12"
+kotlinxCoroutinesTest = "1.9.0"
+turbine = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +53,7 @@ ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 # Room (Offline First Database)
@@ -77,6 +81,11 @@ androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.
 # Jetpack Security untuk enkripsi data
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 
+# Testing
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+
 [bundles]
 database-security = [
     "sqlcipher-android",
@@ -90,4 +99,3 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-
